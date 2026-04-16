@@ -3,54 +3,110 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Tier List</title>
+<title>Tier List Workspace</title>
 
 <style>
+:root {
+  --bg-color: #f4f4f4;
+  --text-color: #333;
+  --header-bg: #222;
+  --header-text: white;
+  --tier-bg: #e5e5e5;
+  --pool-border: #aaa;
+  --pool-bg: #fff;
+  --btn-bg: #eee;
+  --btn-text: #222;
+}
+
+/* Picao AI Brand Palette integration */
+[data-theme="dark"] {
+  --bg-color: #0f172a;    /* Deep Slate */
+  --text-color: #f8fafc;
+  --header-bg: #4f46e5;   /* Electric Indigo */
+  --header-text: #ffffff;
+  --tier-bg: #1e293b;     /* Lighter Slate */
+  --pool-border: #9333ea; /* Vibrant Purple Accent */
+  --pool-bg: #0f172a;
+  --btn-bg: #9333ea;      /* Vibrant Purple for buttons */
+  --btn-text: #ffffff;
+}
+
 body {
   margin: 0;
-  font-family: Arial, sans-serif;
-  background: #f4f4f4;
+  font-family: system-ui, -apple-system, sans-serif;
+  background: var(--bg-color);
+  color: var(--text-color);
+  transition: background 0.3s, color 0.3s;
 }
 
 .header {
-  padding: 10px 20px;
-  background: #222;
-  color: white;
+  padding: 12px 20px;
+  background: var(--header-bg);
+  color: var(--header-text);
   display: flex;
   justify-content: space-between;
+  align-items: center;
+  transition: background 0.3s;
+  font-weight: bold;
+  font-size: 1.2rem;
 }
 
-button { padding: 6px 12px; cursor: pointer; }
+.controls {
+  display: flex;
+  gap: 10px;
+}
 
-.main { padding: 15px; }
+button { 
+  padding: 8px 16px; 
+  cursor: pointer; 
+  border: none;
+  border-radius: 6px;
+  background: var(--btn-bg);
+  color: var(--btn-text);
+  font-weight: 600;
+  transition: opacity 0.2s;
+}
+
+button:hover { opacity: 0.8; }
+
+.main { 
+  padding: 20px; 
+  max-width: 1000px; 
+  margin: auto; 
+}
 
 /* Tier rows */
 .tier-row {
   display: flex;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .tier-label {
-  width: 80px;
+  width: 100px;
   font-size: 26px;
   font-weight: bold;
-  color: white;
+  color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
 }
 
 .tier-content {
   flex: 1;
-  min-height: 70px;
-  background: #e5e5e5;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, 70px);
-  gap: 6px;
-  padding: 6px;
+  min-height: 80px;
+  background: var(--tier-bg);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 8px;
+  transition: background 0.3s;
 }
 
-/* Colors */
+/* Default Tier Colors */
 .s { background: #2ecc71; }
 .a { background: #3498db; }
 .b { background: #9b59b6; }
@@ -59,34 +115,51 @@ button { padding: 6px 12px; cursor: pointer; }
 
 /* Images */
 .img {
-  width: 70px;
-  height: 70px;
-  border: 2px solid #ccc;
+  width: 74px;
+  height: 74px;
+  border-radius: 4px;
   cursor: grab;
   overflow: hidden;
+  background: rgba(0,0,0,0.05);
+  transition: transform 0.1s;
 }
 
-.img.dragging { opacity: 0.5; }
+.img:active { cursor: grabbing; }
+
+.img.dragging { 
+  opacity: 0.4; 
+  transform: scale(0.95);
+}
 
 .img img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  pointer-events: none; /* Fixes browser treating this as an external image drag */
 }
 
 /* Pool */
 .pool {
-  margin-top: 20px;
-  padding: 10px;
-  border: 2px dashed #aaa;
-  background: #fff;
+  margin-top: 30px;
+  padding: 20px;
+  border: 2px dashed var(--pool-border);
+  background: var(--pool-bg);
+  border-radius: 8px;
+  text-align: center;
+  transition: border-color 0.3s, background 0.3s;
+}
+
+.pool p {
+  margin-top: 0;
+  opacity: 0.7;
 }
 
 .pool-images {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, 70px);
-  gap: 6px;
-  min-height: 60px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-height: 80px;
+  justify-content: center;
 }
 </style>
 </head>
@@ -95,11 +168,13 @@ button { padding: 6px 12px; cursor: pointer; }
 
 <div class="header">
   <div>Tier List</div>
-  <button id="export">Export</button>
+  <div class="controls">
+    <button id="theme-toggle">Toggle Dark Mode</button>
+    <button id="export">Export</button>
+  </div>
 </div>
 
 <div class="main">
-
   <div class="tier-row"><div class="tier-label s">S</div><div class="tier-content"></div></div>
   <div class="tier-row"><div class="tier-label a">A</div><div class="tier-content"></div></div>
   <div class="tier-row"><div class="tier-label b">B</div><div class="tier-content"></div></div>
@@ -107,10 +182,9 @@ button { padding: 6px 12px; cursor: pointer; }
   <div class="tier-row"><div class="tier-label d">D</div><div class="tier-content"></div></div>
 
   <div class="pool">
-    <p>Paste or drag images</p>
+    <p>Paste or drag images from your desktop</p>
     <div class="pool-images" id="pool"></div>
   </div>
-
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -118,7 +192,7 @@ button { padding: 6px 12px; cursor: pointer; }
 <script>
 let dragged = null;
 
-// Create image
+// Create image block
 function createImg(src) {
   const div = document.createElement("div");
   div.className = "img";
@@ -126,11 +200,13 @@ function createImg(src) {
 
   const img = document.createElement("img");
   img.src = src;
+  img.draggable = false; 
   div.appendChild(img);
 
   div.addEventListener("dragstart", () => {
     dragged = div;
-    div.classList.add("dragging");
+    // Timeout keeps the dragged ghost image opaque while fading the original
+    setTimeout(() => div.classList.add("dragging"), 0); 
   });
 
   div.addEventListener("dragend", () => {
@@ -141,19 +217,22 @@ function createImg(src) {
   return div;
 }
 
-// Get insert position (for reordering)
+// Get insertion position (updated to handle multi-row wrapping gracefully)
 function getAfterElement(container, x, y) {
   const els = [...container.querySelectorAll(".img:not(.dragging)")];
 
   return els.reduce((closest, child) => {
     const box = child.getBoundingClientRect();
-    const offset = x - box.left - box.width / 2;
-
-    if (offset < 0 && offset > closest.offset) {
-      return { offset: offset, element: child };
-    } else {
-      return closest;
+    // Check if we are hovering within this child's specific row
+    const inRow = y >= box.top && y <= box.bottom;
+    
+    if (inRow) {
+      const offset = x - box.left - box.width / 2;
+      if (offset < 0 && offset > closest.offset) {
+        return { offset: offset, element: child };
+      }
     }
+    return closest;
   }, { offset: Number.NEGATIVE_INFINITY }).element;
 }
 
@@ -161,62 +240,69 @@ function getAfterElement(container, x, y) {
 function setupZone(zone) {
   zone.addEventListener("dragover", e => {
     e.preventDefault();
+    if (!dragged) return; // Prevent DOM movement if dragging an external file
 
     const after = getAfterElement(zone, e.clientX, e.clientY);
-
     if (!after) {
       zone.appendChild(dragged);
     } else {
       zone.insertBefore(dragged, after);
     }
   });
+}
 
-  zone.addEventListener("drop", e => {
-    e.preventDefault();
+document.querySelectorAll(".tier-content, .pool-images").forEach(setupZone);
+
+// Handle reading external files
+function handleFiles(files) {
+  const pool = document.getElementById("pool");
+  [...files].forEach(file => {
+    if (file.type.startsWith("image/")) {
+      const reader = new FileReader();
+      reader.onload = ev => pool.appendChild(createImg(ev.target.result));
+      reader.readAsDataURL(file);
+    }
   });
 }
 
-// Apply to all zones
-document.querySelectorAll(".tier-content, .pool-images")
-  .forEach(setupZone);
+// Global File Drag & Drop
+document.addEventListener("dragover", e => e.preventDefault());
+
+document.addEventListener("drop", e => {
+  e.preventDefault();
+  // If `dragged` is set, we are moving a tier list item, NOT importing a file.
+  if (dragged) return; 
+
+  if (e.dataTransfer && e.dataTransfer.files.length) {
+    handleFiles(e.dataTransfer.files);
+  }
+});
 
 // Paste images
 document.addEventListener("paste", e => {
-  for (let item of e.clipboardData.items) {
-    if (item.type.startsWith("image")) {
-      const reader = new FileReader();
-      reader.onload = ev => {
-        document.getElementById("pool")
-          .appendChild(createImg(ev.target.result));
-      };
-      reader.readAsDataURL(item.getAsFile());
+  if (e.clipboardData && e.clipboardData.files.length) {
+    handleFiles(e.clipboardData.files);
+  } else if (e.clipboardData && e.clipboardData.items) {
+    for (let item of e.clipboardData.items) {
+      if (item.type.startsWith("image/")) {
+        handleFiles([item.getAsFile()]);
+      }
     }
   }
 });
 
-// Drag from desktop
-document.addEventListener("dragover", e => e.preventDefault());
+// Theme Toggle
+document.getElementById("theme-toggle").onclick = () => {
+  const root = document.documentElement;
+  const newTheme = root.getAttribute("data-theme") === "dark" ? "light" : "dark";
+  root.setAttribute("data-theme", newTheme);
+};
 
-document.addEventListener("drop", e => {
-  if (e.dataTransfer.files.length) {
-    e.preventDefault();
-
-    [...e.dataTransfer.files].forEach(file => {
-      if (file.type.startsWith("image")) {
-        const reader = new FileReader();
-        reader.onload = ev => {
-          document.getElementById("pool")
-            .appendChild(createImg(ev.target.result));
-        };
-        reader.readAsDataURL(file);
-      }
-    });
-  }
-});
-
-// Export
+// Export (updated to capture background colors cleanly)
 document.getElementById("export").onclick = async () => {
-  const canvas = await html2canvas(document.querySelector(".main"));
+  const canvas = await html2canvas(document.querySelector(".main"), {
+    backgroundColor: getComputedStyle(document.body).backgroundColor
+  });
   const link = document.createElement("a");
   link.download = "tierlist.png";
   link.href = canvas.toDataURL();
