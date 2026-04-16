@@ -14,20 +14,20 @@
   --tier-bg: #e5e5e5;
   --pool-border: #aaa;
   --pool-bg: #fff;
-  --btn-bg: #eee;
+  --btn-bg: #ddd;
   --btn-text: #222;
 }
 
-/* Picao AI Brand Palette integration */
+/* Standard Dark Mode */
 [data-theme="dark"] {
-  --bg-color: #0f172a;    /* Deep Slate */
-  --text-color: #f8fafc;
-  --header-bg: #4f46e5;   /* Electric Indigo */
+  --bg-color: #121212;
+  --text-color: #e0e0e0;
+  --header-bg: #1a1a1a;
   --header-text: #ffffff;
-  --tier-bg: #1e293b;     /* Lighter Slate */
-  --pool-border: #9333ea; /* Vibrant Purple Accent */
-  --pool-bg: #0f172a;
-  --btn-bg: #9333ea;      /* Vibrant Purple for buttons */
+  --tier-bg: #222222;
+  --pool-border: #555;
+  --pool-bg: #1a1a1a;
+  --btn-bg: #333;
   --btn-text: #ffffff;
 }
 
@@ -46,7 +46,6 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  transition: background 0.3s;
   font-weight: bold;
   font-size: 1.2rem;
 }
@@ -59,7 +58,7 @@ body {
 button { 
   padding: 8px 16px; 
   cursor: pointer; 
-  border: none;
+  border: 1px solid rgba(128, 128, 128, 0.2);
   border-radius: 6px;
   background: var(--btn-bg);
   color: var(--btn-text);
@@ -85,57 +84,96 @@ button:hover { opacity: 0.8; }
 }
 
 .tier-label {
-  width: 100px;
-  font-size: 26px;
-  font-weight: bold;
-  color: #fff;
+  width: 110px;
+  color: #111; /* Keep dark so it reads well on bright background colors */
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+}
+
+.tier-label .letter {
+  font-size: 32px;
+  font-weight: bold;
+}
+
+.tier-label .sub {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  opacity: 0.75;
+  outline: none;
 }
 
 .tier-content {
   flex: 1;
-  min-height: 80px;
+  min-height: 100px;
   background: var(--tier-bg);
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
   padding: 8px;
-  transition: background 0.3s;
 }
 
 /* Default Tier Colors */
-.s { background: #2ecc71; }
-.a { background: #3498db; }
-.b { background: #9b59b6; }
-.c { background: #e67e22; }
-.d { background: #e74c3c; }
+.s { background: #ff7f7f; }
+.a { background: #ffbf7f; }
+.b { background: #ffff7f; }
+.c { background: #7fff7f; }
+.d { background: #7fbfff; }
 
 /* Images */
 .img {
-  width: 74px;
-  height: 74px;
+  width: 100px; /* Increased size for better visibility */
+  height: 100px;
   border-radius: 4px;
   cursor: grab;
+  position: relative;
   overflow: hidden;
   background: rgba(0,0,0,0.05);
-  transition: transform 0.1s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
 }
 
 .img:active { cursor: grabbing; }
 
 .img.dragging { 
   opacity: 0.4; 
-  transform: scale(0.95);
 }
 
 .img img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  pointer-events: none; /* Fixes browser treating this as an external image drag */
+  pointer-events: none; 
+}
+
+/* Delete Button */
+.delete-btn {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 20px;
+  height: 20px;
+  background: rgba(0, 0, 0, 0.6);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.2s, background 0.2s;
+  z-index: 10;
+}
+
+.img:hover .delete-btn {
+  opacity: 1;
+}
+
+.delete-btn:hover {
+  background: #ff4444;
 }
 
 /* Pool */
@@ -146,7 +184,6 @@ button:hover { opacity: 0.8; }
   background: var(--pool-bg);
   border-radius: 8px;
   text-align: center;
-  transition: border-color 0.3s, background 0.3s;
 }
 
 .pool p {
@@ -158,7 +195,7 @@ button:hover { opacity: 0.8; }
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  min-height: 80px;
+  min-height: 100px;
   justify-content: center;
 }
 </style>
@@ -170,16 +207,50 @@ button:hover { opacity: 0.8; }
   <div>Tier List</div>
   <div class="controls">
     <button id="theme-toggle">Toggle Dark Mode</button>
-    <button id="export">Export</button>
+    <button id="export">Export Image</button>
   </div>
 </div>
 
 <div class="main">
-  <div class="tier-row"><div class="tier-label s">S</div><div class="tier-content"></div></div>
-  <div class="tier-row"><div class="tier-label a">A</div><div class="tier-content"></div></div>
-  <div class="tier-row"><div class="tier-label b">B</div><div class="tier-content"></div></div>
-  <div class="tier-row"><div class="tier-label c">C</div><div class="tier-content"></div></div>
-  <div class="tier-row"><div class="tier-label d">D</div><div class="tier-content"></div></div>
+  <div class="tier-row">
+    <div class="tier-label s">
+      <div class="letter">S</div>
+      <div class="sub" contenteditable="true" spellcheck="false">Godly</div>
+    </div>
+    <div class="tier-content"></div>
+  </div>
+  
+  <div class="tier-row">
+    <div class="tier-label a">
+      <div class="letter">A</div>
+      <div class="sub" contenteditable="true" spellcheck="false">Great</div>
+    </div>
+    <div class="tier-content"></div>
+  </div>
+  
+  <div class="tier-row">
+    <div class="tier-label b">
+      <div class="letter">B</div>
+      <div class="sub" contenteditable="true" spellcheck="false">Good</div>
+    </div>
+    <div class="tier-content"></div>
+  </div>
+  
+  <div class="tier-row">
+    <div class="tier-label c">
+      <div class="letter">C</div>
+      <div class="sub" contenteditable="true" spellcheck="false">Okay</div>
+    </div>
+    <div class="tier-content"></div>
+  </div>
+  
+  <div class="tier-row">
+    <div class="tier-label d">
+      <div class="letter">D</div>
+      <div class="sub" contenteditable="true" spellcheck="false">Bad</div>
+    </div>
+    <div class="tier-content"></div>
+  </div>
 
   <div class="pool">
     <p>Paste or drag images from your desktop</p>
@@ -192,7 +263,6 @@ button:hover { opacity: 0.8; }
 <script>
 let dragged = null;
 
-// Create image block
 function createImg(src) {
   const div = document.createElement("div");
   div.className = "img";
@@ -201,11 +271,20 @@ function createImg(src) {
   const img = document.createElement("img");
   img.src = src;
   img.draggable = false; 
+
+  const del = document.createElement("div");
+  del.className = "delete-btn";
+  del.innerHTML = "&times;";
+  del.onclick = (e) => {
+    e.stopPropagation(); 
+    div.remove();
+  };
+
   div.appendChild(img);
+  div.appendChild(del);
 
   div.addEventListener("dragstart", () => {
     dragged = div;
-    // Timeout keeps the dragged ghost image opaque while fading the original
     setTimeout(() => div.classList.add("dragging"), 0); 
   });
 
@@ -217,13 +296,11 @@ function createImg(src) {
   return div;
 }
 
-// Get insertion position (updated to handle multi-row wrapping gracefully)
 function getAfterElement(container, x, y) {
   const els = [...container.querySelectorAll(".img:not(.dragging)")];
 
   return els.reduce((closest, child) => {
     const box = child.getBoundingClientRect();
-    // Check if we are hovering within this child's specific row
     const inRow = y >= box.top && y <= box.bottom;
     
     if (inRow) {
@@ -236,11 +313,10 @@ function getAfterElement(container, x, y) {
   }, { offset: Number.NEGATIVE_INFINITY }).element;
 }
 
-// Enable drop zones
 function setupZone(zone) {
   zone.addEventListener("dragover", e => {
     e.preventDefault();
-    if (!dragged) return; // Prevent DOM movement if dragging an external file
+    if (!dragged) return;
 
     const after = getAfterElement(zone, e.clientX, e.clientY);
     if (!after) {
@@ -253,7 +329,6 @@ function setupZone(zone) {
 
 document.querySelectorAll(".tier-content, .pool-images").forEach(setupZone);
 
-// Handle reading external files
 function handleFiles(files) {
   const pool = document.getElementById("pool");
   [...files].forEach(file => {
@@ -265,12 +340,10 @@ function handleFiles(files) {
   });
 }
 
-// Global File Drag & Drop
 document.addEventListener("dragover", e => e.preventDefault());
 
 document.addEventListener("drop", e => {
   e.preventDefault();
-  // If `dragged` is set, we are moving a tier list item, NOT importing a file.
   if (dragged) return; 
 
   if (e.dataTransfer && e.dataTransfer.files.length) {
@@ -278,7 +351,6 @@ document.addEventListener("drop", e => {
   }
 });
 
-// Paste images
 document.addEventListener("paste", e => {
   if (e.clipboardData && e.clipboardData.files.length) {
     handleFiles(e.clipboardData.files);
@@ -298,15 +370,30 @@ document.getElementById("theme-toggle").onclick = () => {
   root.setAttribute("data-theme", newTheme);
 };
 
-// Export (updated to capture background colors cleanly)
+// Export
 document.getElementById("export").onclick = async () => {
-  const canvas = await html2canvas(document.querySelector(".main"), {
-    backgroundColor: getComputedStyle(document.body).backgroundColor
-  });
-  const link = document.createElement("a");
-  link.download = "tierlist.png";
-  link.href = canvas.toDataURL();
-  link.click();
+  const exportBtn = document.getElementById("export");
+  const originalText = exportBtn.innerText;
+  exportBtn.innerText = "Exporting...";
+  
+  // Temporarily hide delete buttons from the screenshot
+  const style = document.createElement('style');
+  style.innerHTML = '.delete-btn { display: none !important; }';
+  document.head.appendChild(style);
+
+  try {
+    const canvas = await html2canvas(document.querySelector(".main"), {
+      backgroundColor: getComputedStyle(document.body).backgroundColor,
+      scale: 2 // Higher quality export
+    });
+    const link = document.createElement("a");
+    link.download = "tierlist.png";
+    link.href = canvas.toDataURL("image/png");
+    link.click();
+  } finally {
+    document.head.removeChild(style);
+    exportBtn.innerText = originalText;
+  }
 };
 </script>
 
